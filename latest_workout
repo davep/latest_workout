@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+"""Quick and dirty tool to get the latest workout from an Apple Health export."""
+
+##############################################################################
+# Python imports.
+from pathlib import Path
+from zipfile import ZipFile
+
+##############################################################################
+# Turn the GPX filename into a comparable string.
+def apple_time( gpx_info ):
+    """Create a sortable ket from a GPX filename."""
+
+    # First off, pull out the filename alone, sans directory and extension.
+    filename = Path( gpx_info.filename ).stem
+
+    # Names look like route_2021-10-23_1.52pm.gpx and the above will have
+    # removed the .gpx, so now we're left with something like
+    # route_2021-10-23_1.52pm. Next we strip off the route_ text...
+    filename = filename[ len( "route_" ): ]
+
+    # Now, the date and time are separated by a _...
+    date, time = filename.split( "_" )
+
+    # At this point the date should be in a sensible ISO-a-like format. The
+    # time is a right state though. But that's fine. First we figure out if
+    # it's am or pm...
+    extra_hours = 12 if time[ -2: ] == "pm" else 0
+    hours, mins = time[ :-2 ].split( "." )
+
+    # Now that we've messed about with the data within the name, stitch it
+    # all back together.
+    return f"{date} {int( hours ) + extra_hours:02}:{int( mins ):02}"
+
+# Assume the Apple Health full export is in the current directory...
+with ZipFile( "export.zip" ) as history:
+
+    # Pull out the latest route.
+    latest = sorted( [
+        route for route in history.infolist()
+        if route.filename.startswith( "apple_health_export/workout-routes/" )
+        and route.filename.endswith( ".gpx" )
+    ], key=apple_time, reverse=True )[ 0 ]
+
+    # Patch the name so it'll extract to here.
+    latest.filename = Path( latest.filename ).name
+
+    # Now extract it.
+    history.extract( latest )
+
+    # Give some feedback.
+    print( f"Extracted {latest.filename}" )
+
+### latest_workout ends here
