@@ -36,11 +36,11 @@ def apple_time( gpx_info ):
 with ZipFile( "export.zip" ) as history:
 
     # Pull out the latest route.
-    latest = sorted( [
+    latest, *_ = sorted( [
         route for route in history.infolist()
         if route.filename.startswith( "apple_health_export/workout-routes/" )
         and route.filename.endswith( ".gpx" )
-    ], key=apple_time, reverse=True )[ 0 ]
+    ], key=apple_time, reverse=True )
 
     # Patch the name so it'll extract to here.
     latest.filename = Path( latest.filename ).name
