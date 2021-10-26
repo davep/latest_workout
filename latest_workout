@@ -9,7 +9,7 @@ from zipfile import ZipFile
 ##############################################################################
 # Turn the GPX filename into a comparable string.
 def apple_time( gpx_info ):
-    """Create a sortable ket from a GPX filename."""
+    """Create a sortable key from a GPX filename."""
 
     # First off, pull out the filename alone, sans directory and extension.
     filename = Path( gpx_info.filename ).stem
